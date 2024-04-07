@@ -265,3 +265,69 @@ public class EmailProperties {
 
 ②`ConfigurationProperties(prefix="email(键名前缀)")`
 
+```java
+package com.markus.server.service.pojo;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@ConfigurationProperties(prefix = "email")
+@Component
+public class EmailProperties {
+//    @Value("${email.user}")
+    private String user;
+//    @Value("${email.code}")
+    private String code;
+//    @Value("${email.host}")
+    private String host;
+//    @Value("${email.auth}")
+    public boolean auth;
+
+    public String getUser() {
+        return user;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public boolean getAuth() {
+        return auth;
+    }
+
+    @Override
+    public String toString() {
+        return "EmailProperties{" +
+                "user='" + user + '\'' +
+                ", code='" + code + '\'' +
+                ", host='" + host + '\'' +
+                ", auth=" + auth +
+                '}';
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setAuth(boolean auth) {
+        this.auth = auth;
+    }
+}
+```
+
+**`class`的成员属性名应该与配置文件中的键名保持一致**
+
+**注意`ConfigurationProperties(prefix="{prefixName}")`是通过`Setter`和`Getter`对`Property`进行赋值操作的所以`class`中的`Setter`和`Getter`要有都有，要没有都没有**
+
