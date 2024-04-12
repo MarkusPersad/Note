@@ -88,3 +88,7 @@ Spring 有两个最核心模块： IoC 和 AOP。
 ⑥`Spring test`
 
 - spring-test：集成测试支持，主要是对junit的封装
+
+## 导论
+
+目前`Spring`有基于`XML`方式和基于`Annotation`方式，为与`SpringBoot`项目接轨我们即将讲述基于`Annotation`方式的`Bean`管理
