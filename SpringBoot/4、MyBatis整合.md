@@ -104,7 +104,7 @@ INSERT INTO "user"(name, age, gender, phone) VALUES ('光明右使',48,1,'188000
 
 ## 项目结构
 
-![](D:\Note\images\屏幕截图 2024-04-07 150014.png)
+![](..\images\屏幕截图 2024-04-07 150014.png)
 
 ## 数据库JDBC配置
 
