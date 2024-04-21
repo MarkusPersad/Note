@@ -226,3 +226,492 @@ public class UserTest {
 
 ### `Setter`注入
 
+修改`UserServiceImpl.class`
+
+```java
+package com.markus.Service.Impl;
+
+import com.markus.Dao.UserDao;
+import com.markus.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+    private UserDao userDao;
+    @Autowired
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    @Override
+    public void out(){
+        userDao.print();
+        System.out.println("Service层执行结束");
+    }
+}
+```
+
+修改`UserController.class`
+
+```java
+package com.markus.Controller;
+
+import com.markus.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class UserController {
+    private UserService userService;
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+    public void out(){
+        userService.out();
+        System.out.println("Controller层执行结束。");
+    }
+}
+```
+
+测试成功
+
+![](../images/2024-04-20_17-26.png)
+
+### 构造方法注入
+
+修改`UserServiceImpl.class`
+
+```java
+package com.markus.Service.Impl;
+
+import com.markus.Dao.UserDao;
+import com.markus.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+    private UserDao userDao;
+    
+//    public void setUserDao(UserDao userDao) {
+//        this.userDao = userDao;
+//    }
+    @Autowired
+    public UserServiceImpl(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    @Override
+    public void out(){
+        userDao.print();
+        System.out.println("Service层执行结束");
+    }
+}
+```
+
+修改`UserController.class`
+
+```java
+package com.markus.Controller;
+
+import com.markus.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class UserController {
+    private UserService userService;
+//    public void setUserService(UserService userService) {
+//        this.userService = userService;
+//    }
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    public void out(){
+        userService.out();
+        System.out.println("Controller层执行结束。");
+    }
+}
+```
+
+测试成功
+
+![](../images/2024-04-20_17-26.png)
+
+### 形参上注入
+
+修改`UserServiceImpl.class`
+
+```java
+package com.markus.Service.Impl;
+
+import com.markus.Dao.UserDao;
+import com.markus.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+    private UserDao userDao;
+
+//    public void setUserDao(UserDao userDao) {
+//        this.userDao = userDao;
+//    }
+   
+    public UserServiceImpl( @Autowired UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    @Override
+    public void out(){
+        userDao.print();
+        System.out.println("Service层执行结束");
+    }
+}
+```
+
+修改`UserController.class`
+
+```java
+package com.markus.Controller;
+
+import com.markus.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class UserController {
+    private UserService userService;
+//    public void setUserService(UserService userService) {
+//        this.userService = userService;
+//    }
+
+    public UserController(@Autowired UserService userService) {
+        this.userService = userService;
+    }
+
+    public void out(){
+        userService.out();
+        System.out.println("Controller层执行结束。");
+    }
+}
+```
+
+测试成功
+
+![](../images/2024-04-20_17-26.png)
+
+### 只有一个构造函数，无注解
+
+修改`UserController.class`
+
+```java
+package com.markus.Controller;
+
+import com.markus.Service.UserService;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class UserController {
+    private UserService userService;
+//    public void setUserService(UserService userService) {
+//        this.userService = userService;
+//    }
+
+    public UserController( UserService userService) {
+        this.userService = userService;
+    }
+
+    public void out(){
+        userService.out();
+        System.out.println("Controller层执行结束。");
+    }
+}
+```
+
+测试通过
+
+![](../images/2024-04-20_17-26.png)
+
+### `@Autowired`注解和`@Qualifier`注解联合
+
+添加`UserDao`的实现类`UserDaoRedisImpl.class`
+
+```java
+package com.markus.Dao.Impl;
+
+import com.markus.Dao.UserDao;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class UserDaoRedisImpl implements UserDao {
+    @Override
+    public void print() {
+        System.out.println("Redis Dao层执行结束");
+    }
+}
+```
+
+直接运行会报错
+
+修改`UserServiceImpl.class`
+
+```java
+package com.markus.Service.Impl;
+
+import com.markus.Dao.UserDao;
+import com.markus.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+    private UserDao userDao;
+
+//    public void setUserDao(UserDao userDao) {
+//        this.userDao = userDao;
+//    }
+
+    public UserServiceImpl( @Autowired @Qualifier("userDaoRedisImpl") UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    @Override
+    public void out(){
+        userDao.print();
+        System.out.println("Service层执行结束");
+    }
+}
+```
+
+`@Autowired`是通过`byType`注入，一但接口的实现类有两个实现类，就需要再通过`byName`指定`Bean`例如加上`@Qualifier("{bean.id}")`
+
+### 总结
+
+- `@Autowired`注解可以出现在：属性上、构造方法上、构造方法的参数上、`setter`方法上。
+- 当带参数的构造方法只有一个，`@Autowired`注解可以省略。（）
+- `@Autowired`注解默认根据类型注入。如果要根据名称注入的话，需要配合`@Qualifier`注解一起使用。
+
+## `@Resource`注入
+
+`@Resource`注解也可以完成属性注入。那它和`@Autowired`注解有什么区别？
+
+- `@Resource`注解是`JDK`扩展包中的，也就是说属于`JDK`的一部分。所以该注解是标准注解，更加具有通用性。(JSR-250标准中制定的注解类型。`JSR`是Java规范提案。)
+- `@Autowired`注解是Spring框架自己的。
+- **@Resource注解默认根据名称装配`byName`，未指定name时，使用属性名作为name。通过name找不到的话会自动启动通过类型byType装配。**
+- **`@Autowired`注解默认根据类型装配`byType`，如果想根据名称装配，需要配合`Qualifier`注解一起用。**
+- @Resource注解用在属性上、setter方法上。
+- `@Autowired`注解用在属性上、setter方法上、构造方法上、构造方法参数上。
+
+@Resource注解属于`JDK`扩展包，所以不在`JDK`当中，需要额外引入以下依赖：【**如果是`JDK8`的话不需要额外引入依赖。高于`JDK11`或低于`JDK8`需要引入以下依赖。**】
+
+引入`jakarta.annotation-api`依赖
+
+```xml
+<dependency>
+    <groupId>jakarta.annotation</groupId>
+    <artifactId>jakarta.annotation-api</artifactId>
+    <version>3.0.0</version>
+</dependency>
+```
+
+源码
+
+```java
+package jakarta.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Repeatable(Resources.class)
+public @interface Resource {
+    String name() default "";
+
+    String lookup() default "";
+
+    Class<?> type() default Object.class;
+
+    Resource.AuthenticationType authenticationType() default Resource.AuthenticationType.CONTAINER;
+
+    boolean shareable() default true;
+
+    String mappedName() default "";
+
+    String description() default "";
+
+    public static enum AuthenticationType {
+        CONTAINER,
+        APPLICATION;
+
+        private AuthenticationType() {
+        }
+    }
+}
+```
+
+### 依据`name`注入
+
+修改`UserDaoImpl.class`
+
+```java
+package com.markus.Dao.Impl;
+
+import com.markus.Dao.UserDao;
+import org.springframework.stereotype.Repository;
+
+
+@Repository(value = "myUserDaoImpl")
+public class UserDaoImpl implements UserDao {
+    @Override
+    public void print() {
+        System.out.println("Dao层执行结束");
+    }
+}
+```
+
+修改`UserServiceImpl.class`
+
+```java
+package com.markus.Service.Impl;
+
+import com.markus.Dao.UserDao;
+import com.markus.Service.UserService;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+    @Resource(name = "myUserDaoImpl")
+    private UserDao userDao;
+
+//    public void setUserDao(UserDao userDao) {
+//        this.userDao = userDao;
+//    }
+
+//    public UserServiceImpl( @Autowired @Qualifier("userDaoRedisImpl") UserDao userDao) {
+//        this.userDao = userDao;
+//    }
+
+    @Override
+    public void out(){
+        userDao.print();
+        System.out.println("Service层执行结束");
+    }
+}
+```
+
+测试通过
+
+### `name`未知注入
+
+修改`UserDaoImpl.class`
+
+```java
+package com.markus.Dao.Impl;
+
+import com.markus.Dao.UserDao;
+import org.springframework.stereotype.Repository;
+
+
+@Repository(value = "myUserDaoImpl")
+public class UserDaoImpl implements UserDao {
+    @Override
+    public void print() {
+        System.out.println("Dao层执行结束");
+    }
+}
+```
+
+修改`UserServiceImpl.class`
+
+```java
+package com.markus.Service.Impl;
+
+import com.markus.Dao.UserDao;
+import com.markus.Service.UserService;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+    @Resource
+    private UserDao myUserDaoImpl;
+
+//    public void setUserDao(UserDao userDao) {
+//        this.userDao = userDao;
+//    }
+
+//    public UserServiceImpl( @Autowired @Qualifier("userDaoRedisImpl") UserDao userDao) {
+//        this.userDao = userDao;
+//    }
+
+    @Override
+    public void out(){
+        myUserDaoImpl.print();
+        System.out.println("Service层执行结束");
+    }
+}
+```
+
+测试成功
+
+当`@Resource`注解使用时没有指定`name`的时候，还是根据`name`进行查找，这个`name`是属性名。
+
+### 总结
+
+`@Resource`注解：默认`byName`注入，没有指定`name`时把属性名当做`name`，根据`name`找不到时，才会`byType`注入。`byType`注入时，某种类型的`Bean`只能有一个
+
+## `Spring`全注解开发
+
+添加`MyConfig.class` `Config`类
+
+```java
+package com.markus.Config;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan( basePackages = "com.markus")
+public class MyConfiguration {
+}
+```
+
+测试类
+
+```java
+package com.markus;
+
+import com.markus.Config.MyConfiguration;
+import com.markus.Controller.UserController;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class UserTest {
+     private Logger logger = LoggerFactory.getLogger(UserTest.class);
+    @Test
+    public void testUser(){
+        ApplicationContext context = new AnnotationConfigApplicationContext(MyConfiguration.class);
+        UserController controller = context.getBean("userController", UserController.class);
+        controller.out();
+        logger.info("执行成功");
+    }
+}
+```
+
+测试通过
+
