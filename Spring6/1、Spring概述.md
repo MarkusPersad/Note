@@ -16,7 +16,7 @@ Spring 自诞生以来备受青睐，一直被广大开发人员作为 Java 企�
 
 经过十多年的发展，Spring 已经不再是一个单纯的应用框架，而是逐渐发展成为一个由多个不同子项目（模块）组成的成熟技术，例如 Spring Framework、Spring MVC、SpringBoot、Spring Cloud、Spring Data、Spring Security 等，其中 Spring Framework 是其他子项目的基础。
 
-这些子项目涵盖了从企业级应用开发到云计算等各方面的内容，能够帮助开发人员解决软件发展过程中不断产生的各种实际问题，给开发人员带来了更好的开发体验。
+xxxxxxxxxx package com.markus;​import com.markus.Controller.UserController;import org.junit.jupiter.api.Test;import org.slf4j.Logger;import org.slf4j.LoggerFactory;import org.springframework.context.support.ClassPathXmlApplicationContext;​public class UserTest {     private Logger logger = LoggerFactory.getLogger(UserTest.class);    @Test    public void testUser(){        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");        UserController controller = context.getBean("userController", UserController.class);        controller.out();        logger.info("执行成功");    }}java
 
 **狭义的 Spring：Spring Framework**
 
