@@ -338,3 +338,184 @@ public void test()
 ```
 
 ## 使用`Resource` 作为属性
+
+前面介绍了 Spring 提供的资源访问策略，但这些依赖访问策略要么需要使用 Resource 实现类，要么需要使用 ApplicationContext 来获取资源。实际上，当应用程序中的 Bean 实例需要访问资源时，Spring 有更好的解决方法：直接利用依赖注入。从这个意义上来看，Spring 框架不仅充分利用了策略模式来简化资源访问，而且还将策略模式和 IoC 进行充分地结合，最大程度地简化了 Spring 资源访问。
+
+归纳起来，如果 Bean 实例需要访问资源，有如下两种解决方案:
+
+- **代码中获取 Resource 实例。**
+- **使用依赖注入。**
+
+对于第一种方式，当程序获取 Resource 实例时，总需要提供 Resource 所在的位置，不管通过 FileSystemResource 创建实例，还是通过 ClassPathResource 创建实例，或者通过 ApplicationContext 的 getResource() 方法获取实例，都需要提供资源位置。这意味着：资源所在的物理位置将被耦合到代码中，如果资源位置发生改变，则必须改写程序。因此，通常建议采用第二种方法，让 Spring 为 Bean 实例**依赖注入**资源。
+
+### 让Spring为Bean实例依赖注入资源
+
+#### 创建依赖注入类，定义属性和方法
+
+```java
+package com.markus.ResourceLoaders;
+
+
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ResourceBean {
+    private Resource resource;
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+    public void parse()
+    {
+        System.out.println(resource.getFilename());
+        System.out.println(resource.getDescription());
+    }
+}
+```
+
+#### 添加注解和配置外部属性文件
+
+```properties
+resource.value = file:test.txt
+```
+
+```java
+package com.markus.ResourceLoaders;
+
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
+
+@Component
+@PropertySource("classpath:application.properties")
+public class ResourceBean {
+    @Value("${resource.value}")
+    private Resource resource;
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+    public void parse()
+    {
+        System.out.println(resource.getFilename());
+        System.out.println(resource.getDescription());
+    }
+}
+```
+
+#### 测试
+
+```java
+package com.markus;
+
+import com.markus.Config.MyConfig;
+import com.markus.ResourceLoaders.ResourceBean;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+@SpringJUnitConfig(classes = {MyConfig.class})
+public class ResourceBeanTest {
+    @Autowired
+    private ResourceBean resourceBean;
+
+    @Test
+    public void test() {
+        resourceBean.parse();
+    }
+}
+```
+
+## 应用程序上下文和资源路径
+
+### 概述
+
+不管以怎样的方式创建`ApplicationContext`实例，都需要为`ApplicationContext`指定配置文件，`Spring`允许使用一份或多份`XML`配置文件。当程序创建`ApplicationContext`实例时，通常也是以`Resource`的方式来访问配置文件的，所以`ApplicationContext`完全支持`ClassPathResource`、`FileSystemResource`、`ServletContextResource`等资源访问方式。
+
+**`ApplicationContext`确定资源访问策略通常有两种方法：**
+
+**（1）使用`ApplicationContext`实现类指定访问策略。**
+
+**（2）使用前缀指定访问策略。**
+
+### `ApplicationContext`实现类指定访问策略
+
+创建`ApplicationContext`对象时，通常可以使用如下实现类：
+
+（1） `ClassPathXMLApplicationContext `: 对应使用`ClassPathResource`进行资源访问。
+
+（2）`FileSystemXmlApplicationContext` ： 对应使用`FileSystemResource`进行资源访问。
+
+（3）`XmlWebApplicationContext` ： 对应使用`ServletContextResource`进行资源访问。
+
+当使用`ApplicationContext`的不同实现类时，就意味着`Spring`使用相应的资源访问策略。
+
+### 使用前缀指定访问策略
+
+#### `classpath`前缀使用
+
+```java
+package com.markus.context;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.Resource;
+
+public class ContextS {
+    public static void main(String[] args){
+        /*
+         * 通过搜索文件系统路径下的xml文件创建ApplicationContext，
+         * 但通过指定classpath:前缀强制搜索类加载路径
+         * classpath:bean.xml
+         * */
+        ApplicationContext context = new ClassPathXmlApplicationContext("classpath:beans.xml");
+        System.out.println(context);
+        Resource resource = context.getResource("test.txt");
+        System.out.println(resource.getFilename());
+        System.out.println(resource.getDescription());
+    }
+}
+```
+
+#### `classpath`通配符使用
+
+`classpath*:`前缀提供了加载多个`XML`配置文件的能力，当使用`classpath*:`前缀来指定`XML`配置文件时，系统将搜索类加载路径，找到所有与文件名匹配的文件，分别加载文件中的配置定义，最后合并成一个`ApplicationContext`。
+
+```java
+ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath*:bean.xml");
+System.out.println(ctx);
+```
+
+当使用`classpath * :`前缀时，`Spring`将会搜索类加载路径下所有满足该规则的配置文件。
+
+如果不是采用`classpath * :`前缀，而是改为使用`classpath:`前缀，`Spring`则只加载第一个符合条件的`XML`文件
+
+**注意 ：** 
+
+classpath * : 前缀仅对ApplicationContext有效。实际情况是，创建ApplicationContext时，分别访问多个配置文件(通过ClassLoader的getResource方法实现)。因此，classpath * :前缀不可用于Resource。
+
+#### 通配符其他使用
+
+一次性加载多个配置文件的方式：指定配置文件时使用通配符
+
+```java
+ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:bean*.xml");
+```
+
+Spring允许将classpath*:前缀和通配符结合使用：
+
+```java
+ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath*:bean*.xml");
+```
+
